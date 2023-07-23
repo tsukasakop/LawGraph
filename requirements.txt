@@ -1,1 +1,3 @@
 xmltodict==0.13.0
+mecab-python3==1.0.4
+unidic-lite==1.0.8

@@ -3,6 +3,7 @@ import re
 from functools import singledispatch
 
 import xmltodict as x2d
+import MeCab
 
 
 @singledispatch
@@ -19,8 +20,6 @@ def _(snt: list) -> str:
 @singledispatch
 def get_txt_by_ps(ps: dict) -> str:
     if "Sentence" in ps:
-        # print(type(ps["Sentence"]))
-        # print(ps["Sentence"])
         return get_txt_by_snt(ps["Sentence"])
     raise Exception("invalid paragraph-sentence")
 
@@ -31,7 +30,6 @@ def _(ps: list) -> str:
 
 @singledispatch
 def get_txt_by_para(para: dict) -> str:
-    # [print(i) for i in para]
     if "ParagraphSentence" in para:
         return get_txt_by_ps(para["ParagraphSentence"])
 
@@ -48,6 +46,24 @@ def get_txt_by_art(art:dict) -> str:
         raise Exception("invalid article")
     return get_txt_by_para(art["Paragraph"])
 
+word_type_wl=["名詞", "動詞"]
+def count_words(txt: str) -> dict:    
+    cnt = {}
+    tagger = MeCab.Tagger()
+    node = tagger.parseToNode(txt)
+    while node:
+        word = node.surface
+        tp = node.feature.split(",")[0]
+        if not tp in word_type_wl:
+            node = node.next
+            continue
+        if not word in cnt:
+            cnt[word] = 0
+        cnt[word] += 1
+        node = node.next
+        
+    cnt = sorted(cnt.items(), key=lambda x:x[1], reverse=True)
+    return cnt
 
 
 def main():
@@ -59,13 +75,15 @@ def main():
     article_matches = re.findall(article_pattern, txt, re.DOTALL)
 
     # Print the matched content inside the <div> tags
+    d = {}
     for match in article_matches:
         art = x2d.parse(match)["Article"]
         title = art["ArticleTitle"]
-        print(title)
         art_txt = get_txt_by_art(art)
-        print(art_txt)
+        d[title] = count_words(art_txt)
         # input(match)
+    print(d)
+        
 
 
 """use xmltodict
