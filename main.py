@@ -89,7 +89,7 @@ def make_cypher_query(tx, d: dict) -> None:
 
 def main():
     FNAME = "./xml/321CONSTITUTION_19470503_000000000000000/321CONSTITUTION_19470503_000000000000000.xml"
-    with open(FNAME) as fd:
+    with open(FNAME,encoding="utf-8") as fd:
         txt = fd.read()
 
     article_pattern = r"<Article\b[^>]*>.*?</Article>"
