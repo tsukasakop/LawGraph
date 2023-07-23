@@ -1,10 +1,10 @@
 from __future__ import annotations
 import re
-from functools import singledispatch
+from functools import singledispatch, reduce
 
 import xmltodict as x2d
 import MeCab
-
+from neo4j import GraphDatabase, basic_auth
 
 @singledispatch
 def get_txt_by_snt(snt: str) -> str:
@@ -62,9 +62,30 @@ def count_words(txt: str) -> dict:
         cnt[word] += 1
         node = node.next
         
-    cnt = sorted(cnt.items(), key=lambda x:x[1], reverse=True)
     return cnt
 
+def make_cypher_query(tx, d: dict) -> None:
+    tx.run("CREATE (n:Test)")
+    # for art in d:
+    #     query = "CREATE (n:Article)"
+    #     # input(query)
+    #     tx.run(query, name=art)
+    # terms = list(set(reduce(lambda a,b: a+list(b.keys()), d.values(), [])))
+    # for term in terms:
+    #     query = "CREATE (n:Term)" 
+    #     # input(term)
+    #     tx.run(query, name=term)
+    # for art, cnt in d.items():
+    #     for term in cnt.keys():
+    #         query = f"MATCH(a:Article),(t:Term) WHERE a.name = '{art}' AND t.name = '{term}' CREATE (a)-[r:USES]->(t)"
+    #         # input(query)
+    #         tx.run(query)
+    
+            
+        
+        
+    
+    
 
 def main():
     FNAME = "./xml/321CONSTITUTION_19470503_000000000000000/321CONSTITUTION_19470503_000000000000000.xml"
@@ -82,7 +103,15 @@ def main():
         art_txt = get_txt_by_art(art)
         d[title] = count_words(art_txt)
         # input(match)
-    print(d)
+
+    driver = GraphDatabase.driver('bolt://localhost:7687', auth=('neo4j', 'password'))
+    print(driver)
+    driver.execute_query("CREATE (n:Test)")
+    # with driver.session() as session:
+    #     input(routing_)
+    #     session.execute_write(make_cypher_query,d)
+    
+    
         
 
 
