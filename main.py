@@ -65,21 +65,21 @@ def count_words(txt: str) -> dict:
     return cnt
 
 def make_cypher_query(tx, d: dict) -> None:
-    tx.run("CREATE (n:Test)")
-    # for art in d:
-    #     query = "CREATE (n:Article)"
-    #     # input(query)
-    #     tx.run(query, name=art)
-    # terms = list(set(reduce(lambda a,b: a+list(b.keys()), d.values(), [])))
-    # for term in terms:
-    #     query = "CREATE (n:Term)" 
-    #     # input(term)
-    #     tx.run(query, name=term)
-    # for art, cnt in d.items():
-    #     for term in cnt.keys():
-    #         query = f"MATCH(a:Article),(t:Term) WHERE a.name = '{art}' AND t.name = '{term}' CREATE (a)-[r:USES]->(t)"
-    #         # input(query)
-    #         tx.run(query)
+    # tx.run("CREATE (n:Test)")
+    for art in d:
+        query = f"CREATE (n:Article{{name: $name}})"
+        # input(query)
+        tx.run(query, name=art)
+    terms = list(set(reduce(lambda a,b: a+list(b.keys()), d.values(), [])))
+    for term in terms:
+        query = f"CREATE (n:Term{{name: $name}})"
+        # input(term)
+        tx.run(query, name=term)
+    for art, cnt in d.items():
+        for term in cnt.keys():
+            query = f"MATCH(a:Article),(t:Term) WHERE a.name = '{art}' AND t.name = '{term}' CREATE (a)-[r:USES]->(t)"
+            # input(query)
+            tx.run(query)
     
             
         
@@ -105,11 +105,8 @@ def main():
         # input(match)
 
     driver = GraphDatabase.driver('bolt://localhost:7687', auth=('neo4j', 'password'))
-    print(driver)
-    driver.execute_query("CREATE (n:Test)")
-    # with driver.session() as session:
-    #     input(routing_)
-    #     session.execute_write(make_cypher_query,d)
+    with driver.session() as session:
+        session.execute_write(make_cypher_query,d)
     
     
         
